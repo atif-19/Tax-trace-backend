@@ -89,7 +89,6 @@ Since MRP includes GST, we use the reverse calculation:
 ### ✅ Phase 8: Income Comparison Scenarios (Completed)
 - **Feature**: Added relative tax-work-time metrics for different income brackets (30k, 60k, 100k+).
 - **Purpose**: Provides perspective on tax burden across different socio-economic levels.
-
 ## 🚀 Deployment Ready
 - Environment variables isolated in `.env`.
 - Modular MVC structure for easy scaling.

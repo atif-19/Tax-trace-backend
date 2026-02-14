@@ -9,24 +9,23 @@ exports.lookupProduct = async (req, res) => {
             return res.status(400).json({ message: 'Barcode is required' });
         }
 
-        // 1. Search in local database
-        let product = await Product.findOne({ barcode });
+        // 1. Check local DB first
+        // let product = await Product.findOne({ barcode });
 
-        if (product) {
-            return res.status(200).json({
-                success: true,
-                data: product,
-                source: 'database'
-            });
-        }
+        // if (product) {
+        //     return res.status(200).json({
+        //         success: true,
+        //         data: product,
+        //         source: 'database'
+        //     });
+        // }
 
-        // 2. Search in External API
+        // 2. Search External API
         const externalData = await fetchFromExternalAPI(barcode);
 
         if (externalData) {
-            
-            await Product.insertOne();
-
+            // WE DO NOT SAVE YET. 
+            // We return this to the frontend so the user can add the PRICE.
             return res.status(200).json({
                 success: true,
                 data: externalData,
@@ -34,13 +33,12 @@ exports.lookupProduct = async (req, res) => {
             });
         }
 
-        // 3. Not found anywhere
         res.status(404).json({
             success: false,
-            message: 'Product not found. You can add it manually.'
+            message: 'Product not found in global database. Please enter details manually.'
         });
 
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
