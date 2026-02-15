@@ -1,7 +1,7 @@
 const Scan = require('../models/Scan');
 const Product = require('../models/Product');
 const { calculateGst } = require('../utils/gstCalculator');
-
+const { getRateByCategory } = require('../utils/gstRates'); // Import the utility
 
 exports.createScan = async (req, res) => {
     try {
@@ -10,22 +10,35 @@ exports.createScan = async (req, res) => {
         // 1. Find or Create Product
         let product = await Product.findOne({ barcode });
 
-        if (!product) {
-            // New product in our ecosystem
+       if (!product) {
+            // Determine the correct GST rate automatically
+            const autoGstRate = getRateByCategory(category);
+
             product = new Product({
                 barcode,
                 name,
                 image,
-                category,
+                category: category || 'General',
                 avgPrice: pricePaid,
                 priceCount: 1,
-                gstRate: gstRate || 18 // Default if not provided
+                gstRate: autoGstRate // Set automatically!
             });
         } else {
             // Update existing product's average price (Crowdsourcing Logic)
             const totalPreviousValue = product.avgPrice * product.priceCount;
             product.priceCount += 1;
             product.avgPrice = (totalPreviousValue + pricePaid) / product.priceCount;
+
+            // B) FIX: If the stored product has no image, but we just got one, SAVE IT
+            if (!product.image && image) {
+                product.image = image;
+            }
+
+            // C) Optional: Update category if it was "General" before but now we have specific data
+            if (product.category === 'General' && category) {
+                product.category = category;
+                product.gstRate = getRateByCategory(category);
+            }
         }
         
         await product.save();
@@ -50,6 +63,24 @@ exports.createScan = async (req, res) => {
             updatedProduct: product
         });
 
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get user scan history
+// @route   GET /api/scans/history
+exports.getScanHistory = async (req, res) => {
+    try {
+        const history = await Scan.find({ user: req.user._id })
+            .sort({ date: -1 }) // Newest scans first
+            .populate('product', 'name image category'); // Pull name & image from Product model
+
+        res.status(200).json({
+            success: true,
+            count: history.length,
+            data: history
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

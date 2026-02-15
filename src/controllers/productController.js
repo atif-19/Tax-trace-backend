@@ -10,15 +10,15 @@ exports.lookupProduct = async (req, res) => {
         }
 
         // 1. Check local DB first
-        // let product = await Product.findOne({ barcode });
+        let product = await Product.findOne({ barcode });
 
-        // if (product) {
-        //     return res.status(200).json({
-        //         success: true,
-        //         data: product,
-        //         source: 'database'
-        //     });
-        // }
+        if (product) {
+            return res.status(200).json({
+                success: true,
+                data: product,
+                source: 'database'
+            });
+        }
 
         // 2. Search External API
         const externalData = await fetchFromExternalAPI(barcode);

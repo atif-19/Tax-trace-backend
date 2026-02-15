@@ -93,3 +93,9 @@ Since MRP includes GST, we use the reverse calculation:
 - Environment variables isolated in `.env`.
 - Modular MVC structure for easy scaling.
 - Clean JSON responses for frontend integration.
+
+### ✅ Phase 8.1: Tax Intelligence (Completed)
+- **Automatic Mapping**: Integrated `gstRates.js` utility to assign GST slabs based on product category.
+- **Data Enrichment**: Scans now populate full product details (images/names) for the UI history.
+- **Endpoints**:
+  - `GET /api/scans/history` (Private)
